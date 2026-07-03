@@ -1,41 +1,48 @@
-from dataclasses import dataclass
-from decimal import Decimal
-from pathlib import Path
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-from app.exceptions import ConfigurationError
+from decimal import Decimal
 
-load_dotenv()
-
-@dataclass
 class CalculatorConfig:
-    base_dir: Path = Path(os.getenv('CALCULATOR_BASE_DIR', Path.cwd()))
-    max_history_size: int = int(os.getenv('CALCULATOR_MAX_HISTORY_SIZE', '1000'))
-    auto_save: bool = os.getenv('CALCULATOR_AUTO_SAVE', 'true').lower() in ('true', '1')
-    precision: int = int(os.getenv('CALCULATOR_PRECISION', '10'))
-    max_input_value: Decimal = Decimal(os.getenv('CALCULATOR_MAX_INPUT_VALUE', '1e999'))
-    default_encoding: str = os.getenv('CALCULATOR_DEFAULT_ENCODING', 'utf-8')
+    def __init__(self):
+        load_dotenv()
 
-    @property
-    def history_dir(self) -> Path:
-        return self.base_dir / "history"
+        # Base directory
+        self.base_dir = Path(os.getenv("CALCULATOR_BASE_DIR", "."))
 
-    @property
-    def history_file(self) -> Path:
-        return self.history_dir / "calculator_history.csv"
+        # Derived directories
+        self.log_dir = self.base_dir / "logs"
+        self.history_dir = self.base_dir / "history"
 
-    @property
-    def log_dir(self) -> Path:
-        return self.base_dir / "logs"
+        # Files
+        self.log_file = self.log_dir / "calculator.log"
+        self.history_file = self.history_dir / "history.csv"
 
-    @property
-    def log_file(self) -> Path:
-        return self.log_dir / "calculator.log"
+        # Settings
+        self.max_history_size = int(os.getenv("CALCULATOR_MAX_HISTORY_SIZE", "1000"))
+        self.auto_save = os.getenv("CALCULATOR_AUTO_SAVE", "true").lower() == "true"
+        self.precision = int(os.getenv("CALCULATOR_PRECISION", "10"))
+        self.max_input_value = Decimal(os.getenv("CALCULATOR_MAX_INPUT_VALUE", "1e999"))
+        self.default_encoding = os.getenv("CALCULATOR_DEFAULT_ENCODING", "utf-8")
+
+        # Setup directories
+        self.setup_directories()
+
+        # Validate configuration
+        self.validate()
+
+    def setup_directories(self):
+        """Create required directories if they do not exist."""
+        self.log_dir.mkdir(parents=True, exist_ok=True)
+        self.history_dir.mkdir(parents=True, exist_ok=True)
 
     def validate(self):
+        """Validate configuration values."""
         if self.max_history_size <= 0:
-            raise ConfigurationError("max_history_size must be positive")
+            raise ValueError("CALCULATOR_MAX_HISTORY_SIZE must be positive")
+
         if self.precision <= 0:
-            raise ConfigurationError("precision must be positive")
+            raise ValueError("CALCULATOR_PRECISION must be positive")
+
         if self.max_input_value <= 0:
-            raise ConfigurationError("max_input_value must be positive")
+            raise ValueError("CALCULATOR_MAX_INPUT_VALUE must be positive")
