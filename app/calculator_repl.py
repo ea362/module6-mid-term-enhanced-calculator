@@ -1,7 +1,9 @@
 from decimal import Decimal
 import logging
+from logging import config
 
 from app.calculator import Calculator
+from app.calculator_config import CalculatorConfig
 from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
@@ -16,7 +18,15 @@ def calculator_repl():
     """
     try:
         calc = Calculator()
+        config = CalculatorConfig()
 
+        logging.basicConfig(
+            filename=str(config.log_file),
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s"
+        )
+
+        
         # Register observers for logging and auto-saving
         calc.add_observer(LoggingObserver())
         calc.add_observer(AutoSaveObserver(calc))
