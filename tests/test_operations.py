@@ -85,3 +85,8 @@ def test_percent():
 def test_abs_diff():
     op = OperationFactory.create_operation("abs_diff")
     assert op.execute(Decimal("10"), Decimal("3")) == Decimal("7")
+
+def test_percent_zero_denominator():
+    op = OperationFactory.create_operation("percent")
+    with pytest.raises(ValidationError):
+        op.execute(Decimal("10"), Decimal("0"))
