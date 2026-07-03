@@ -64,3 +64,24 @@ def test_root_exact():
 def test_factory_unknown_operation():
     with pytest.raises(ValueError, match="Unknown operation"):
         OperationFactory.create_operation("nonexistent")
+
+def test_modulus():
+    op = OperationFactory.create_operation("modulus")
+    assert op.execute(Decimal("10"), Decimal("3")) == Decimal("1")
+
+def test_modulus_zero():
+    op = OperationFactory.create_operation("modulus")
+    with pytest.raises(ValidationError):
+        op.execute(Decimal("10"), Decimal("0"))
+
+def test_int_divide():
+    op = OperationFactory.create_operation("int_divide")
+    assert op.execute(Decimal("10"), Decimal("3")) == Decimal("3")
+
+def test_percent():
+    op = OperationFactory.create_operation("percent")
+    assert op.execute(Decimal("50"), Decimal("200")) == Decimal("25")
+
+def test_abs_diff():
+    op = OperationFactory.create_operation("abs_diff")
+    assert op.execute(Decimal("10"), Decimal("3")) == Decimal("7")
