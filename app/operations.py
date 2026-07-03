@@ -36,6 +36,29 @@ class Root(Operation):
             raise ValidationError("Zero root is undefined")
         return Decimal(pow(float(a), 1 / float(b)))
 
+class Modulus(Operation):
+    def execute(self, a, b):
+        if b == 0:
+            raise ValidationError("Modulus by zero is not allowed")
+        return a % b
+
+class IntegerDivision(Operation):
+    def execute(self, a, b):
+        if b == 0:
+            raise ValidationError("Integer division by zero is not allowed")
+        return a // b
+
+class Percentage(Operation):
+    def execute(self, a, b):
+        if b == 0:
+            raise ValidationError("Percentage denominator cannot be zero")
+        return (a / b) * Decimal("100")
+
+class AbsoluteDifference(Operation):
+    def execute(self, a, b):
+        return abs(a - b)
+
+
 class OperationFactory:
     _operations = {
         'add': Addition,
@@ -43,7 +66,11 @@ class OperationFactory:
         'multiply': Multiplication,
         'divide': Division,
         'power': Power,
-        'root': Root
+        'root': Root,
+        'modulus': Modulus,
+        'int_divide': IntegerDivision,
+        'percent': Percentage,
+        'abs_diff': AbsoluteDifference
     }
 
     @classmethod
