@@ -25,6 +25,8 @@ def calculator_repl():
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s"
         )
+        
+
 
         
         # Register observers for logging and auto-saving
@@ -123,9 +125,16 @@ def calculator_repl():
                             result = result.normalize()
 
                         print(f"\nResult: {result}")
-                    except (ValidationError, OperationError) as e:
+                    except ValidationError as e:
+                        logging.error(f"Validation error: {e}")
                         print(f"Error: {e}")
+
+                    except OperationError as e:
+                        logging.error(f"Operation error: {e}")
+                        print(f"Operation failed: {e}")
+
                     except Exception as e:
+                        logging.error(f"Unexpected error: {e}")
                         print(f"Unexpected error: {e}")
                     continue
 
