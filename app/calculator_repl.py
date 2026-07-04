@@ -53,7 +53,7 @@ def calculator_repl():
 
         while True:
             try:
-                command = input("\nEnter command: ").lower().strip()
+                command = input("\nEnter command: ").strip().lower().split()
 
                 if command == 'help':
                     help_dict = help_provider.get_help()
