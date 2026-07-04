@@ -62,6 +62,9 @@ class Calculator:
         if not self.history:
             return
 
+        # Ensure the history directory exists
+        self.config.history_dir.mkdir(parents=True, exist_ok=True)
+
         data = {
             "operation": [c.operation for c in self.history],
             "operand1": [str(c.operand1) for c in self.history],
