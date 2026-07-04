@@ -54,6 +54,7 @@ def calculator_repl():
                     print("  filter - Filter history by operation")
                     print("  export_csv - Export history to CSV")
                     print("  export_excel - Export history to Excel")
+                    print("  analytics - Show analytics summary of history")
                     print("  exit - Exit the calculator")
                     continue
 
@@ -163,6 +164,19 @@ def calculator_repl():
 
                     calc.export_filtered_history_to_excel(operation or None, min_value, max_value)
 
+                if command == "analytics":
+                    operation = input("Enter operation to analyze (or leave blank for all): ").strip()
+                    operation = operation or None
+
+                    stats = calc.analyze_history(operation)
+
+                    if not stats:
+                        print("No matching history to analyze.")
+                    else:
+                        print("Analytics Summary:")
+                        for key, value in stats.items():
+                            print(f"  {key}: {value}")
+                
                 if command in ['add','subtract','multiply','divide','power','root','modulus','int_divide','percent', 'abs_diff']:
                     try:
                         print("\nEnter numbers (or 'cancel' to abort):")
