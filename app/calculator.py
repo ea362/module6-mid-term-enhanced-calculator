@@ -24,23 +24,33 @@ class Calculator:
 
     def set_operation(self, operation: Operation):
         self.operation_strategy = operation
+    
+    def register_observer(self, observer):
+        self.observers.append(observer)
 
-    def perform_operation(self, a, b):
+    def perform_operation(self, operation_name, a, b):
         if not hasattr(self, 'operation_strategy'):
-            raise OperationError("No operation set")
+            self.operation_strategy = OperationFactory.create_operation(operation_name)
 
         validated_a = InputValidator.validate_number(a, self.config)
         validated_b = InputValidator.validate_number(b, self.config)
+
         result = self.operation_strategy.execute(validated_a, validated_b)
 
-        calc = Calculation(self.operation_strategy.__class__.__name__, validated_a, validated_b)
+        calc = Calculation(operation_name, validated_a, validated_b, result)
+
+        # Save undo snapshot
         self.undo_stack.append(CalculatorMemento(self.history.copy()))
         self.redo_stack.clear()
+
+        # Append to history
         self.history.append(calc)
 
+        # Notify observers
         self.notify_observers(calc)
 
         return result
+
     
     def save_history(self):
         """Save calculation history to a CSV file using pandas."""

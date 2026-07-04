@@ -11,6 +11,12 @@ class Calculation:
     result: Decimal = field(init=False)
     timestamp: datetime.datetime = field(default_factory=datetime.datetime.now)
 
+    def __init__(self, operation, operand1, operand2, result):
+        self.operation = operation
+        self.operand1 = operand1
+        self.operand2 = operand2
+        self.result = result
+
     def __post_init__(self):
         self.result = self.calculate()
 
