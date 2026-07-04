@@ -17,7 +17,7 @@ def test_export_filtered_history(tmp_path, monkeypatch):
 
     # Ensure history is saved
     calc.save_history()
-    assert config.history_file.exists()
+    assert config.history_file.exists(), "History file was not created"
 
     # Export with filters
     calc.export_filtered_history_to_csv(operation="add", min_value=Decimal("5"))

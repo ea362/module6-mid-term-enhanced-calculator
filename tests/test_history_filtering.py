@@ -20,7 +20,7 @@ def test_filter_history(tmp_path, monkeypatch):
     calc.perform_operation(Decimal("2"), Decimal("5"))   # result = 10
 
     calc.save_history()
-    assert config.history_file.exists()
+    assert config.history_file.exists(), "History file was not created"
 
     df = calc.filter_history(operation="add")
     assert len(df) == 2

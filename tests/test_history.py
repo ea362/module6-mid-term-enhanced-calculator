@@ -12,7 +12,6 @@ def test_logging_observer(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
 
     config = CalculatorConfig()
-    # Configure logging to write to the log file
     logging.basicConfig(
         filename=str(config.log_file),
         level=logging.INFO,
@@ -27,6 +26,7 @@ def test_logging_observer(tmp_path, monkeypatch):
     calc.set_operation(op)
     calc.perform_operation(Decimal("2"), Decimal("3"))
 
+    # Log file should be created
     assert config.log_file.exists()
     content = config.log_file.read_text()
     assert "add" in content

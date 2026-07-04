@@ -10,7 +10,7 @@ def test_analyze_history(tmp_path, monkeypatch):
     config = CalculatorConfig()
     calc = Calculator(config)
 
-    # Perform some calculations
+    # Perform calculations
     op_add = OperationFactory.create_operation("add")
     calc.set_operation(op_add)
     calc.perform_operation(Decimal("2"), Decimal("3"))     # 5
@@ -20,12 +20,12 @@ def test_analyze_history(tmp_path, monkeypatch):
     calc.set_operation(op_mul)
     calc.perform_operation(Decimal("2"), Decimal("5"))     # 10
 
-    # Verify history has entries
+    # Verify history is not empty
     assert len(calc.history) == 3
 
-    # Save and analyze
+    # Save – this will create the CSV
     calc.save_history()
-    assert config.history_file.exists()
+    assert config.history_file.exists(), "History file was not created"
 
     stats = calc.analyze_history("add")
     assert stats["count"] == 2
