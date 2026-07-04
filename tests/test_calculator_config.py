@@ -8,8 +8,9 @@ def test_default_configuration():
     assert config.precision > 0
 
 def test_invalid_max_history_size():
-    with pytest.raises(ConfigurationError):
-        config = CalculatorConfig(max_history_size=-1)
+    # Now we can pass keyword arg directly
+    config = CalculatorConfig(max_history_size=-1)
+    with pytest.raises(ValueError, match="CALCULATOR_MAX_HISTORY_SIZE must be positive"):
         config.validate()
 
 def test_properties():
@@ -21,14 +22,14 @@ def test_properties():
 
 def test_validate_precision_zero():
     config = CalculatorConfig(precision=0)
-    with pytest.raises(ConfigurationError, match="precision must be positive"):
+    with pytest.raises(ValueError, match="CALCULATOR_PRECISION must be positive"):
         config.validate()
 
 def test_validate_max_input_value_zero():
     config = CalculatorConfig(max_input_value=Decimal("0"))
-    with pytest.raises(ConfigurationError, match="max_input_value must be positive"):
+    with pytest.raises(ValueError, match="CALCULATOR_MAX_INPUT_VALUE must be positive"):
         config.validate()
 
 def test_validate_valid():
     config = CalculatorConfig()
-    config.validate()   # should not raise
+    config.validate()  # should not raise

@@ -1,6 +1,7 @@
 from decimal import Decimal
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
+from app.operations import OperationFactory
 
 def test_analyze_history(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
@@ -8,9 +9,14 @@ def test_analyze_history(tmp_path, monkeypatch):
     config = CalculatorConfig()
     calc = Calculator(config)
 
-    calc.perform_operation("add", Decimal("2"), Decimal("3"))     # 5
-    calc.perform_operation("add", Decimal("10"), Decimal("20"))   # 30
-    calc.perform_operation("multiply", Decimal("2"), Decimal("5")) # 10
+    # Use set_operation and perform_operation correctly
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))     # 5
+    calc.perform_operation(Decimal("10"), Decimal("20"))   # 30
+    op_mul = OperationFactory.create_operation("multiply")
+    calc.set_operation(op_mul)
+    calc.perform_operation(Decimal("2"), Decimal("5"))     # 10
 
     calc.save_history()
 

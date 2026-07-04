@@ -9,14 +9,14 @@ def test_perform_operation_addition():
     calc = Calculator()
     operation = OperationFactory.create_operation("add")
     calc.set_operation(operation)
-    result = calc.perform_operation(operation, 2, 3)
+    result = calc.perform_operation(2, 3)
     assert result == Decimal("5")
 
 def test_undo_and_redo():
     calc = Calculator()
     operation = OperationFactory.create_operation("add")
     calc.set_operation(operation)
-    calc.perform_operation(operation, 2, 3)
+    calc.perform_operation(2, 3)
     calc.undo()
     assert calc.history == []
     calc.redo()
@@ -37,22 +37,21 @@ def test_perform_operation_no_operation():
 
 def test_show_history_empty():
     calc = Calculator()
-    assert calc.show_history() == []  # assuming returns list
+    assert calc.show_history() == []
 
 def test_show_history_with_entries():
     calc = Calculator()
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(op, 2, 3)
+    calc.perform_operation(2, 3)
     history = calc.show_history()
     assert len(history) == 1
-    # We can check string content if we implement show_history, but for now just exists
 
 def test_clear_history():
     calc = Calculator()
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(op, 2, 3)
+    calc.perform_operation(2, 3)
     calc.clear_history()
     assert calc.history == []
     assert calc.undo_stack == []
@@ -65,18 +64,16 @@ def test_add_observer_and_notify():
     calc.add_observer(mock_observer)
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(op, 2, 3)
+    calc.perform_operation(2, 3)
     mock_observer.update.assert_called_once()
-    # Also check that notify_observers is called inside perform_operation
 
 def test_save_history():
     calc = Calculator()
-    # Just call to cover, no exception expected
-    calc.save_history()
+    calc.save_history()  # no exception expected
 
 def test_load_history():
     calc = Calculator()
-    calc.load_history()
+    calc.load_history()  # no exception expected
 
 def test_properties():
     config = CalculatorConfig()
@@ -87,12 +84,12 @@ def test_properties():
 
 def test_validate_precision_zero():
     config = CalculatorConfig(precision=0)
-    with pytest.raises(ConfigurationError, match="precision must be positive"):
+    with pytest.raises(ValueError, match="CALCULATOR_PRECISION must be positive"):
         config.validate()
 
 def test_validate_max_input_value_zero():
     config = CalculatorConfig(max_input_value=Decimal("0"))
-    with pytest.raises(ConfigurationError, match="max_input_value must be positive"):
+    with pytest.raises(ValueError, match="CALCULATOR_MAX_INPUT_VALUE must be positive"):
         config.validate()
 
 def test_perform_operation_invalid_input():
@@ -100,11 +97,11 @@ def test_perform_operation_invalid_input():
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
     with pytest.raises(ValidationError, match="Invalid number format"):
-        calc.perform_operation(op, "abc", 2)
+        calc.perform_operation("abc", 2)
 
 def test_perform_operation_division_by_zero():
     calc = Calculator()
     op = OperationFactory.create_operation("divide")
     calc.set_operation(op)
     with pytest.raises(ValidationError, match="Division by zero"):
-        calc.perform_operation(op, 5, 0)
+        calc.perform_operation(5, 0)

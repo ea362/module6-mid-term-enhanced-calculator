@@ -1,8 +1,7 @@
 from decimal import Decimal
-
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
-
+from app.operations import OperationFactory
 
 def test_export_filtered_history(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
@@ -10,8 +9,10 @@ def test_export_filtered_history(tmp_path, monkeypatch):
     config = CalculatorConfig()
     calc = Calculator(config)
 
-    calc.perform_operation("add", Decimal("2"), Decimal("3"))
-    calc.perform_operation("add", Decimal("10"), Decimal("20"))
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))
+    calc.perform_operation(Decimal("10"), Decimal("20"))
     calc.save_history()
 
     calc.export_filtered_history_to_csv(operation="add", min_value=Decimal("5"))

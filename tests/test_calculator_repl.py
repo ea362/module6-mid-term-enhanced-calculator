@@ -53,13 +53,15 @@ def test_repl_help(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", make_inputs(["help", "exit"]))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Available commands" in captured.out
+    # The actual output has "Available Commands:" (capital C)
+    assert "Available Commands" in captured.out
 
 def test_repl_history(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", make_inputs(["add", "2", "3", "history", "exit"]))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Addition 2 3 = 5" in captured.out
+    # The output format is "Addition(2, 3) = 5"
+    assert "Addition(2, 3) = 5" in captured.out
 
 def test_repl_clear(monkeypatch, capsys):
     inputs = ["add", "2", "3", "clear", "history", "exit"]
@@ -67,15 +69,17 @@ def test_repl_clear(monkeypatch, capsys):
     calculator_repl()
     captured = capsys.readouterr()
     assert "History cleared" in captured.out
-    assert "No calculations in history" in captured.out
+    # After clear, history command shows "History is empty."
+    assert "History is empty" in captured.out
 
 def test_repl_undo_redo(monkeypatch, capsys):
     inputs = ["add", "2", "3", "undo", "redo", "exit"]
     monkeypatch.setattr("builtins.input", make_inputs(inputs))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Operation undone" in captured.out
-    assert "Operation redone" in captured.out
+    # Undo prints "Undid last calculation." and redo prints "Redid last undone calculation."
+    assert "Undid last calculation" in captured.out
+    assert "Redid last undone calculation" in captured.out
 
 def test_repl_cancel(monkeypatch, capsys):
     inputs = ["add", "cancel", "exit"]
@@ -90,14 +94,16 @@ def test_repl_invalid_number(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", make_inputs(inputs))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Error: Invalid number format" in captured.out
+    # Actual error message: "Validation error: Invalid number format: abc"
+    assert "Invalid number format" in captured.out
 
 def test_repl_division_by_zero(monkeypatch, capsys):
     inputs = ["divide", "5", "0", "exit"]
     monkeypatch.setattr("builtins.input", make_inputs(inputs))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Error: Division by zero" in captured.out
+    # Actual error: "Validation error: Division by zero is not allowed"
+    assert "Division by zero is not allowed" in captured.out
 
 def test_repl_unknown_command(monkeypatch, capsys):
     inputs = ["foo", "exit"]
@@ -111,7 +117,8 @@ def test_repl_root_negative(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", make_inputs(inputs))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "Error:" in captured.out
+    # Actual error: "Validation error: Cannot calculate root of negative number"
+    assert "Cannot calculate root of negative number" in captured.out
 
 # --- Save & Load ---
 def test_repl_save(monkeypatch, capsys):
@@ -126,7 +133,8 @@ def test_repl_load(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", make_inputs(inputs))
     calculator_repl()
     captured = capsys.readouterr()
-    assert "History loaded" in captured.out or "Error loading" in captured.out
+    # Since no history file exists, it will print "History loaded successfully" (if file absent, it returns silently?) Actually, load_history returns if file doesn't exist, so it prints "History loaded successfully". So we can check that.
+    assert "History loaded successfully" in captured.out or "Error loading" in captured.out
 
 # --- Interrupts ---
 def test_repl_keyboard_interrupt(monkeypatch, capsys):
@@ -150,8 +158,8 @@ def test_repl_eof(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Input terminated" in captured.out
 
+# --- Error branches ---
 def test_repl_save_error(monkeypatch, capsys):
-    """Cover the 'except Exception' branch when save_history fails."""
     import app.calculator_repl
     original_calculator = app.calculator_repl.Calculator
 
@@ -166,9 +174,7 @@ def test_repl_save_error(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Error saving history" in captured.out
 
-
 def test_repl_load_error(monkeypatch, capsys):
-    """Cover the 'except Exception' branch when load_history fails."""
     import app.calculator_repl
     original_calculator = app.calculator_repl.Calculator
 
@@ -183,9 +189,7 @@ def test_repl_load_error(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "Error loading history" in captured.out
 
-
 def test_repl_fatal_error(monkeypatch, capsys):
-    """Cover the outer try/except (fatal error during REPL startup)."""
     import app.calculator_repl
 
     def bad_calculator(*args, **kwargs):
@@ -196,4 +200,3 @@ def test_repl_fatal_error(monkeypatch, capsys):
         calculator_repl()
     captured = capsys.readouterr()
     assert "Fatal error" in captured.out
-

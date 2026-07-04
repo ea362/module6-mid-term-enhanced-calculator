@@ -12,15 +12,16 @@ def test_logging_observer(tmp_path, monkeypatch):
     calc = Calculator(config)
 
     observer = LoggingObserver(config)
-    calc.register_observer(observer)
+    calc.add_observer(observer)
 
-    calc.perform_operation("add", Decimal("2"), Decimal("3"))
+    from app.operations import OperationFactory
+    op = OperationFactory.create_operation("add")
+    calc.set_operation(op)
+    calc.perform_operation(Decimal("2"), Decimal("3"))
 
     log_file = config.log_file
     assert log_file.exists()
     assert "add" in log_file.read_text()
-
-
 
 def test_autosave_observer_triggers_save(monkeypatch):
     calc = Mock(spec=Calculator)

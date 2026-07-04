@@ -1,7 +1,7 @@
 from decimal import Decimal
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
-
+from app.operations import OperationFactory
 
 def test_save_and_load_history(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
@@ -9,7 +9,9 @@ def test_save_and_load_history(tmp_path, monkeypatch):
     config = CalculatorConfig()
     calc = Calculator(config)
 
-    calc.perform_operation("add", Decimal("2"), Decimal("3"))
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))
     calc.save_history()
 
     assert config.history_file.exists()
