@@ -30,7 +30,7 @@ def calculator_repl():
 
         
         # Register observers for logging and auto-saving
-        calc.add_observer(LoggingObserver())
+        calc.add_observer(LoggingObserver(config))
         calc.add_observer(AutoSaveObserver(calc))
 
         print("Calculator started. Type 'help' for commands.")
@@ -41,13 +41,17 @@ def calculator_repl():
 
                 if command == 'help':
                     print("\nAvailable commands:")
-                    print("  add, subtract, multiply, divide, power, root - Perform calculations")
+                    print("  add, subtract, multiply, divide")
+                    print("  power, root, modulus, int_divide")
+                    print("  percent, abs_diff")
+                    print("\nOther commands:")
                     print("  history - Show calculation history")
                     print("  clear - Clear calculation history")
                     print("  undo - Undo the last calculation")
                     print("  redo - Redo the last undone calculation")
                     print("  save - Save calculation history to file")
                     print("  load - Load calculation history from file")
+                    print("  filter - Filter history by operation")
                     print("  exit - Exit the calculator")
                     continue
 
@@ -63,11 +67,11 @@ def calculator_repl():
                 if command == 'history':
                     history = calc.show_history()
                     if not history:
-                        print("No calculations in history")
+                        print("History is empty.")
                     else:
                         print("\nCalculation History:")
-                        for i, entry in enumerate(history, 1):
-                            print(f"{i}. {entry}")
+                        for item in calc.history:
+                            print(f"{item.operation}({item.operand1}, {item.operand2}) = {item.result}")
                     continue
 
                 if command == 'clear':
@@ -76,17 +80,19 @@ def calculator_repl():
                     continue
 
                 if command == 'undo':
-                    if calc.undo():
-                        print("Operation undone")
-                    else:
-                        print("Nothing to undo")
+                    try:
+                        calc.undo()
+                        print("Undid last calculation.")
+                    except Exception as e:
+                        print(f"Error undoing last calculation: {e}")
                     continue
 
                 if command == 'redo':
-                    if calc.redo():
-                        print("Operation redone")
-                    else:
-                        print("Nothing to redo")
+                    try:
+                        calc.redo()
+                        print("Redid last undone calculation.")
+                    except Exception as e:
+                        print(f"Error redoing last undone calculation: {e}")
                     continue
 
                 if command == 'save':
@@ -105,6 +111,28 @@ def calculator_repl():
                         print(f"Error loading history: {e}")
                     continue
 
+                if command == 'filter':
+                    print("Usage: filter operation [min] [max]")
+                    operation = input("Enter operation to filter by (or leave blank): ").strip()
+                    min_value = input("Enter minimum result value to filter by (or leave blank): ").strip()
+                    max_value = input("Enter maximum result value to filter by (or leave blank): ").strip()
+
+                    try:
+                        min_value = Decimal(min_value) if min_value else None
+                        max_value = Decimal(max_value) if max_value else None
+                    except Exception as e:
+                        print(f"Invalid number format: {e}")
+                        continue
+
+                    filtered_df = calc.filter_history(operation, min_value, max_value)
+
+                    if filtered_df.empty:
+                        print("No matching history entries found.")
+                    else:
+                        print("\nFiltered History:")
+                        print(filtered_df)
+                    continue
+
                 if command in ['add','subtract','multiply','divide','power','root','modulus','int_divide','percent', 'abs_diff']:
                     try:
                         print("\nEnter numbers (or 'cancel' to abort):")
@@ -119,7 +147,7 @@ def calculator_repl():
 
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
-                        result = calc.perform_operation(a, b)
+                        result = calc.perform_operation(operation,a, b)
 
                         if isinstance(result, Decimal):
                             result = result.normalize()
@@ -135,7 +163,7 @@ def calculator_repl():
 
                     except Exception as e:
                         logging.error(f"Unexpected error: {e}")
-                        print(f"Unexpected error: {e}")
+                        print(f"Invalid input. Use: command number1 number2")
                     continue
 
                 print(f"Unknown command: '{command}'. Type 'help' for available commands.")
