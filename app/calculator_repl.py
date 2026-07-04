@@ -1,6 +1,8 @@
 from decimal import Decimal
 import logging
 from logging import config
+from app.help_system import BaseHelpProvider, ExtendedHelpDecorator, REPLHelpDecorator
+from app.calculator_repl import Colors  # if Colors is defined here
 
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
@@ -24,7 +26,12 @@ def calculator_repl():
     Implements a Read-Eval-Print Loop (REPL) that continuously prompts the user
     for commands, processes arithmetic operations, and manages calculation history.
     """
-    
+    help_provider = REPLHelpDecorator(
+                    ExtendedHelpDecorator(
+                        BaseHelpProvider()
+                    )
+                )
+
     try:
         calc = Calculator()
         config = CalculatorConfig()
@@ -49,22 +56,10 @@ def calculator_repl():
                 command = input("\nEnter command: ").lower().strip()
 
                 if command == 'help':
-                    print("\nAvailable commands:")
-                    print("  add, subtract, multiply, divide")
-                    print("  power, root, modulus, int_divide")
-                    print("  percent, abs_diff")
-                    print("\nOther commands:")
-                    print("  history - Show calculation history")
-                    print("  clear - Clear calculation history")
-                    print("  undo - Undo the last calculation")
-                    print("  redo - Redo the last undone calculation")
-                    print("  save - Save calculation history to file")
-                    print("  load - Load calculation history from file")
-                    print("  filter - Filter history by operation")
-                    print("  export_csv - Export history to CSV")
-                    print("  export_excel - Export history to Excel")
-                    print("  analytics - Show analytics summary of history")
-                    print("  exit - Exit the calculator")
+                    help_dict = help_provider.get_help()
+                    print(f"{Colors.OKBLUE}\nAvailable Commands:{Colors.ENDC}")
+                    for cmd, desc in help_dict.items():
+                        print(f"{Colors.OKGREEN}{cmd:15}{Colors.ENDC} - {desc}")
                     continue
 
                 if command == 'exit':
