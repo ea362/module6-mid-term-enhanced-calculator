@@ -1,3 +1,4 @@
+from decimal import Decimal
 import pandas as pd
 from app.calculation import Calculation
 from app.calculator_config import CalculatorConfig
@@ -51,14 +52,43 @@ class Calculator:
 
         return result
 
-    
     def save_history(self):
-        """Save calculation history to a CSV file using pandas."""
-        return [f"{calc.operation} {calc.operand1} {calc.operand2} = {calc.result}" for calc in self.history]
+        """Save calculation history to CSV using pandas."""
+        if not self.history:
+            return
+
+        data = {
+            "operation": [c.operation for c in self.history],
+            "operand1": [str(c.operand1) for c in self.history],
+            "operand2": [str(c.operand2) for c in self.history],
+            "result": [str(c.result) for c in self.history],
+        }
+
+        df = pd.DataFrame(data)
+        df.to_csv(self.config.history_file, index=False, encoding=self.config.default_encoding)
 
     def load_history(self):
-        """Load calculation history from a CSV file using pandas."""
-        pass
+        """Load calculation history from CSV using pandas."""
+        if not self.config.history_file.exists():
+            return
+
+        df = pd.read_csv(self.config.history_file, encoding=self.config.default_encoding)
+
+        self.history.clear()
+
+        for _, row in df.iterrows():
+            calc = Calculation(
+                row["operation"],
+                Decimal(row["operand1"]),
+                Decimal(row["operand2"]),
+                Decimal(row["result"])
+            )
+            self.history.append(calc)
+
+        # Clear undo/redo stacks to avoid stale snapshots
+        self.undo_stack.clear()
+        self.redo_stack.clear()
+
 
     def show_history(self):
         """Return formatted history of calculations."""
