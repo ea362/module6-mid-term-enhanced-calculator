@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from decimal import Decimal
 
 class CalculatorConfig:
-    def __init__(self):
+    def __init__(self, max_input_value=None):
         load_dotenv()
 
         # Base directory
@@ -22,7 +22,11 @@ class CalculatorConfig:
         self.max_history_size = int(os.getenv("CALCULATOR_MAX_HISTORY_SIZE", "1000"))
         self.auto_save = os.getenv("CALCULATOR_AUTO_SAVE", "true").lower() == "true"
         self.precision = int(os.getenv("CALCULATOR_PRECISION", "10"))
-        self.max_input_value = Decimal(os.getenv("CALCULATOR_MAX_INPUT_VALUE", "1e999"))
+        self.max_input_value = (
+            Decimal(max_input_value)
+            if max_input_value is not None
+            else Decimal(os.getenv("CALCULATOR_MAX_INPUT_VALUE", "1e999"))
+        )
         self.default_encoding = os.getenv("CALCULATOR_DEFAULT_ENCODING", "utf-8")
 
         # Setup directories

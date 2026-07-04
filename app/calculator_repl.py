@@ -2,7 +2,6 @@ from decimal import Decimal
 import logging
 from logging import config
 from app.help_system import BaseHelpProvider, ExtendedHelpDecorator, REPLHelpDecorator
-from app.calculator_repl import Colors  # if Colors is defined here
 
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig

@@ -1,2 +1,4 @@
 # Environment configuration
 .env
+build/
+calculator_project.egg-info/
