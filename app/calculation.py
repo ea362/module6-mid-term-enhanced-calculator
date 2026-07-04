@@ -29,11 +29,16 @@ class Calculation:
         return op(self.operand1, self.operand2)
 
     @staticmethod
-    def _raise_div_zero(): raise OperationError("Division by zero is not allowed")
+    def _raise_div_zero():
+        raise OperationError("Division by zero is not allowed")
+
     @staticmethod
-    def _raise_neg_power(): raise OperationError("Negative exponents are not supported")
+    def _raise_neg_power():
+        raise OperationError("Negative exponents are not supported")
+
     @staticmethod
-    def _raise_invalid_root(x, y): raise OperationError("Invalid root operation")
+    def _raise_invalid_root(x, y):
+        raise OperationError("Invalid root operation")
 
     def to_dict(self):
         return {
@@ -45,8 +50,10 @@ class Calculation:
         }
 
     @classmethod
-    def from_dict(cls, data):
-        """Create a Calculation from a dictionary (for CSV loading)."""
+    def from_dict(cls, data: dict) -> "Calculation":
+        """Create a Calculation instance from a dictionary (for CSV loading).
+        The result is set directly to avoid recalculation.
+        """
         obj = cls(data["operation"], Decimal(data["operand1"]), Decimal(data["operand2"]))
         # Bypass __post_init__ to keep the stored result
         object.__setattr__(obj, "result", Decimal(data["result"]))

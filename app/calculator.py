@@ -25,20 +25,25 @@ class Calculator:
 
     def set_operation(self, operation: Operation):
         self.operation_strategy = operation
-    
-    def register_observer(self, observer):
-        self.observers.append(observer)
 
-    def perform_operation(self, operation_name, a, b):
+    def perform_operation(self, a, b):
+        """Perform the currently set operation on two numbers."""
         if not hasattr(self, 'operation_strategy'):
-            self.operation_strategy = OperationFactory.create_operation(operation_name)
+            raise OperationError("No operation set")
 
         validated_a = InputValidator.validate_number(a, self.config)
         validated_b = InputValidator.validate_number(b, self.config)
 
         result = self.operation_strategy.execute(validated_a, validated_b)
 
-        calc = Calculation(operation_name, validated_a, validated_b, result)
+        # Get the operation name from the strategy class
+        op_name = self.operation_strategy.__class__.__name__
+
+        # Create calculation; result will be recomputed in __post_init__,
+        # but we want to store the exact computed result to avoid floating point discrepancies.
+        calc = Calculation(op_name, validated_a, validated_b)
+        # Override the result with the computed one
+        object.__setattr__(calc, "result", result)
 
         # Save undo snapshot
         self.undo_stack.append(CalculatorMemento(self.history.copy()))
@@ -77,18 +82,13 @@ class Calculator:
         self.history.clear()
 
         for _, row in df.iterrows():
-            calc = Calculation(
-                row["operation"],
-                Decimal(row["operand1"]),
-                Decimal(row["operand2"]),
-                Decimal(row["result"])
-            )
+            # Use the classmethod to create Calculation without recomputing
+            calc = Calculation.from_dict(row.to_dict())
             self.history.append(calc)
 
         # Clear undo/redo stacks to avoid stale snapshots
         self.undo_stack.clear()
         self.redo_stack.clear()
-
 
     def show_history(self):
         """Return formatted history of calculations."""
@@ -132,7 +132,6 @@ class Calculator:
         df.to_csv(export_path, index=False, encoding=self.config.default_encoding)
         print(f"Filtered history exported to {export_path}")
 
-
     def export_filtered_history_to_excel(self, operation=None, min_value=None, max_value=None):
         """Export filtered history to Excel."""
         df = self.filter_history(operation, min_value, max_value)
@@ -174,7 +173,6 @@ class Calculator:
             analysis["operation_frequency"] = df["operation"].value_counts().to_dict()
 
         return analysis
-
 
     def undo(self):
         if not self.undo_stack:

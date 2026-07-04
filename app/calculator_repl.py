@@ -1,13 +1,12 @@
 from decimal import Decimal
 import logging
-from logging import config
 from app.help_system import BaseHelpProvider, ExtendedHelpDecorator, REPLHelpDecorator
-
 from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
 from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
+
 
 class Colors:
     HEADER = "\033[95m"
@@ -17,10 +16,21 @@ class Colors:
     FAIL = "\033[91m"
     ENDC = "\033[0m"
 
-def success(msg): print(f"{Colors.OKGREEN}{msg}{Colors.ENDC}")
-def warning(msg): print(f"{Colors.WARNING}{msg}{Colors.ENDC}")
-def error(msg): print(f"{Colors.FAIL}{msg}{Colors.ENDC}")
-def info(msg): print(f"{Colors.OKBLUE}{msg}{Colors.ENDC}")
+
+def success(msg):
+    print(f"{Colors.OKGREEN}{msg}{Colors.ENDC}")
+
+
+def warning(msg):
+    print(f"{Colors.WARNING}{msg}{Colors.ENDC}")
+
+
+def error(msg):
+    print(f"{Colors.FAIL}{msg}{Colors.ENDC}")
+
+
+def info(msg):
+    print(f"{Colors.OKBLUE}{msg}{Colors.ENDC}")
 
 
 def calculator_repl():
@@ -31,10 +41,10 @@ def calculator_repl():
     for commands, processes arithmetic operations, and manages calculation history.
     """
     help_provider = REPLHelpDecorator(
-                    ExtendedHelpDecorator(
-                        BaseHelpProvider()
-                    )
-                )
+        ExtendedHelpDecorator(
+            BaseHelpProvider()
+        )
+    )
 
     try:
         calc = Calculator()
@@ -45,7 +55,7 @@ def calculator_repl():
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s"
         )
-        
+
         # Register observers for logging and auto-saving
         calc.add_observer(LoggingObserver(config))
         calc.add_observer(AutoSaveObserver(calc))
@@ -54,7 +64,8 @@ def calculator_repl():
 
         while True:
             try:
-                command = input("\nEnter command: ").strip().lower().split()
+                # Read command as a single string (not split)
+                command = input("\nEnter command: ").strip().lower()
 
                 if command == 'help':
                     help_dict = help_provider.get_help()
@@ -88,20 +99,17 @@ def calculator_repl():
                     continue
 
                 if command == 'undo':
-                    try:
-                        calc.undo()
+                    if calc.undo():
                         success("Undid last calculation.")
-                    except Exception as e:
-                        error(f"Error undoing last calculation: {e}")
+                    else:
+                        warning("Nothing to undo.")
                     continue
 
-
                 if command == 'redo':
-                    try:
-                        calc.redo()
+                    if calc.redo():
                         success("Redid last undone calculation.")
-                    except Exception as e:
-                        error(f"Error redoing last undone calculation: {e}")
+                    else:
+                        warning("Nothing to redo.")
                     continue
 
                 if command == 'save':
@@ -133,7 +141,7 @@ def calculator_repl():
                         error(f"Invalid number format: {e}")
                         continue
 
-                    filtered_df = calc.filter_history(operation, min_value, max_value)
+                    filtered_df = calc.filter_history(operation or None, min_value, max_value)
 
                     if filtered_df.empty:
                         error("No matching history entries found.")
@@ -155,6 +163,7 @@ def calculator_repl():
                         continue
 
                     calc.export_filtered_history_to_csv(operation or None, min_value, max_value)
+                    continue
 
                 if command == "export_excel":
                     operation = input("Enter operation to filter by (or leave blank): ").strip()
@@ -169,6 +178,7 @@ def calculator_repl():
                         continue
 
                     calc.export_filtered_history_to_excel(operation or None, min_value, max_value)
+                    continue
 
                 if command == "analytics":
                     operation = input("Enter operation to analyze (or leave blank for all): ").strip()
@@ -182,8 +192,16 @@ def calculator_repl():
                         success(f"{Colors.OKGREEN}Analytics Summary:{Colors.ENDC}")
                         for key, value in stats.items():
                             success(f"  {key}: {value}")
-                
-                if command in ['add','subtract','multiply','divide','power','root','modulus','int_divide','percent', 'abs_diff']:
+                    continue
+
+                # List of all supported arithmetic commands
+                arithmetic_commands = {
+                    'add', 'subtract', 'multiply', 'divide',
+                    'power', 'root', 'modulus', 'int_divide',
+                    'percent', 'abs_diff'
+                }
+
+                if command in arithmetic_commands:
                     try:
                         success("\nEnter numbers (or 'cancel' to abort)")
                         a = input("First number: ")
@@ -195,9 +213,12 @@ def calculator_repl():
                             warning("Operation cancelled.")
                             continue
 
+                        # Create operation and set it on the calculator
                         operation = OperationFactory.create_operation(command)
                         calc.set_operation(operation)
-                        result = calc.perform_operation(operation,a, b)
+
+                        # Perform the operation (only operands, operation already set)
+                        result = calc.perform_operation(a, b)
 
                         if isinstance(result, Decimal):
                             result = result.normalize()
@@ -206,16 +227,15 @@ def calculator_repl():
                     except ValidationError as e:
                         logging.error(f"Validation error: {e}")
                         error(f"Validation error: {e}")
-
                     except OperationError as e:
                         logging.error(f"Operation error: {e}")
                         error(f"Operation failed: {e}")
-
                     except Exception as e:
                         logging.error(f"Unexpected error: {e}")
-                        error(f"Invalid input. Use: command number1 number2")
+                        error(f"Unexpected error: {e}")
                     continue
 
+                # If we get here, command is unknown
                 print(f"Unknown command: '{command}'. Type 'help' for available commands.")
 
             except KeyboardInterrupt:
