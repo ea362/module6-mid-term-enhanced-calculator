@@ -85,3 +85,14 @@ pytest --cov=app --cov-fail-under=90
 pytest --cov=app --cov-report=term-missing
 ```
 
+---
+
+### ** Test Installation**
+Run:
+
+```bash
+pip install .
+```
+
+Then start your REPL
+calc-repl
