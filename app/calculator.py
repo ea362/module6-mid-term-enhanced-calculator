@@ -121,6 +121,29 @@ class Calculator:
 
         return df
 
+    def export_filtered_history_to_csv(self, operation=None, min_value=None, max_value=None):
+        """Export filtered history to CSV."""
+        df = self.filter_history(operation, min_value, max_value)
+        if df.empty:
+            print("No matching entries to export.")
+            return
+
+        export_path = self.config.history_dir / "filtered_history.csv"
+        df.to_csv(export_path, index=False, encoding=self.config.default_encoding)
+        print(f"Filtered history exported to {export_path}")
+
+
+    def export_filtered_history_to_excel(self, operation=None, min_value=None, max_value=None):
+        """Export filtered history to Excel."""
+        df = self.filter_history(operation, min_value, max_value)
+        if df.empty:
+            print("No matching entries to export.")
+            return
+
+        export_path = self.config.history_dir / "filtered_history.xlsx"
+        df.to_excel(export_path, index=False, engine="openpyxl")
+        print(f"Filtered history exported to {export_path}")
+
 
     def undo(self):
         if not self.undo_stack:
