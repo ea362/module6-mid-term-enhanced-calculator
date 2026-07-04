@@ -43,3 +43,11 @@ class Calculation:
             'result': str(self.result),
             'timestamp': self.timestamp.isoformat()
         }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create a Calculation from a dictionary (for CSV loading)."""
+        obj = cls(data["operation"], Decimal(data["operand1"]), Decimal(data["operand2"]))
+        # Bypass __post_init__ to keep the stored result
+        object.__setattr__(obj, "result", Decimal(data["result"]))
+        return obj
