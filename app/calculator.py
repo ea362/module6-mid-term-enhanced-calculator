@@ -144,6 +144,37 @@ class Calculator:
         df.to_excel(export_path, index=False, engine="openpyxl")
         print(f"Filtered history exported to {export_path}")
 
+    def analyze_history(self, operation=None):
+        """Return summary statistics for the calculation history."""
+        if not self.config.history_file.exists():
+            return {}
+
+        df = pd.read_csv(self.config.history_file, encoding=self.config.default_encoding)
+
+        # Filter by operation if provided
+        if operation:
+            df = df[df["operation"] == operation]
+
+        if df.empty:
+            return {}
+
+        # Convert result column to numeric
+        df["result"] = df["result"].astype(float)
+
+        analysis = {
+            "count": len(df),
+            "average_result": df["result"].mean(),
+            "min_result": df["result"].min(),
+            "max_result": df["result"].max(),
+            "sum_result": df["result"].sum(),
+        }
+
+        # If no operation filter, include operation frequency
+        if not operation:
+            analysis["operation_frequency"] = df["operation"].value_counts().to_dict()
+
+        return analysis
+
 
     def undo(self):
         if not self.undo_stack:
