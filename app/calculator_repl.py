@@ -52,6 +52,8 @@ def calculator_repl():
                     print("  save - Save calculation history to file")
                     print("  load - Load calculation history from file")
                     print("  filter - Filter history by operation")
+                    print("  export_csv - Export history to CSV")
+                    print("  export_excel - Export history to Excel")
                     print("  exit - Exit the calculator")
                     continue
 
@@ -132,6 +134,34 @@ def calculator_repl():
                         print("\nFiltered History:")
                         print(filtered_df)
                     continue
+
+                if command == "export_csv":
+                    operation = input("Enter operation to filter by (or leave blank): ").strip()
+                    min_value = input("Enter minimum result value (or leave blank): ").strip()
+                    max_value = input("Enter maximum result value (or leave blank): ").strip()
+
+                    try:
+                        min_value = Decimal(min_value) if min_value else None
+                        max_value = Decimal(max_value) if max_value else None
+                    except Exception as e:
+                        print(f"Invalid number format: {e}")
+                        continue
+
+                    calc.export_filtered_history_to_csv(operation or None, min_value, max_value)
+
+                if command == "export_excel":
+                    operation = input("Enter operation to filter by (or leave blank): ").strip()
+                    min_value = input("Enter minimum result value (or leave blank): ").strip()
+                    max_value = input("Enter maximum result value (or leave blank): ").strip()
+
+                    try:
+                        min_value = Decimal(min_value) if min_value else None
+                        max_value = Decimal(max_value) if max_value else None
+                    except Exception as e:
+                        print(f"Invalid number format: {e}")
+                        continue
+
+                    calc.export_filtered_history_to_excel(operation or None, min_value, max_value)
 
                 if command in ['add','subtract','multiply','divide','power','root','modulus','int_divide','percent', 'abs_diff']:
                     try:
