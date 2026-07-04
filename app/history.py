@@ -7,13 +7,14 @@ class HistoryObserver(ABC):
     def update(self, calculation: Calculation): pass
 
 class LoggingObserver(HistoryObserver):
+    def __init__(self, config):
+        self.config = config
+
     def update(self, calculation):
         logging.info(
-            f"Operation: {calculation.operation}, "
-            f"Operand1: {calculation.operand1}, "
-            f"Operand2: {calculation.operand2}, "
-            f"Result: {calculation.result}"
+            f"{calculation.operation}({calculation.operand1}, {calculation.operand2}) = {calculation.result}"
         )
+
 
 class AutoSaveObserver(HistoryObserver):
     def __init__(self, calculator):
