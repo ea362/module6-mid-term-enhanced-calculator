@@ -3,6 +3,7 @@ from app.calculator import Calculator
 from app.calculator_config import CalculatorConfig
 from app.operations import OperationFactory
 
+
 def test_filter_history(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
 
@@ -13,11 +14,13 @@ def test_filter_history(tmp_path, monkeypatch):
     calc.set_operation(op_add)
     calc.perform_operation(Decimal("2"), Decimal("3"))   # result = 5
     calc.perform_operation(Decimal("10"), Decimal("20")) # result = 30
+
     op_mul = OperationFactory.create_operation("multiply")
     calc.set_operation(op_mul)
     calc.perform_operation(Decimal("2"), Decimal("5"))   # result = 10
 
     calc.save_history()
+    assert config.history_file.exists()
 
     df = calc.filter_history(operation="add")
     assert len(df) == 2
