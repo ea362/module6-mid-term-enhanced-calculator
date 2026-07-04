@@ -9,14 +9,14 @@ def test_perform_operation_addition():
     calc = Calculator()
     operation = OperationFactory.create_operation("add")
     calc.set_operation(operation)
-    result = calc.perform_operation(2, 3)
+    result = calc.perform_operation(operation, 2, 3)
     assert result == Decimal("5")
 
 def test_undo_and_redo():
     calc = Calculator()
     operation = OperationFactory.create_operation("add")
     calc.set_operation(operation)
-    calc.perform_operation(2, 3)
+    calc.perform_operation(operation, 2, 3)
     calc.undo()
     assert calc.history == []
     calc.redo()
@@ -43,7 +43,7 @@ def test_show_history_with_entries():
     calc = Calculator()
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(2, 3)
+    calc.perform_operation(op, 2, 3)
     history = calc.show_history()
     assert len(history) == 1
     # We can check string content if we implement show_history, but for now just exists
@@ -52,7 +52,7 @@ def test_clear_history():
     calc = Calculator()
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(2, 3)
+    calc.perform_operation(op, 2, 3)
     calc.clear_history()
     assert calc.history == []
     assert calc.undo_stack == []
@@ -65,7 +65,7 @@ def test_add_observer_and_notify():
     calc.add_observer(mock_observer)
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
-    calc.perform_operation(2, 3)
+    calc.perform_operation(op, 2, 3)
     mock_observer.update.assert_called_once()
     # Also check that notify_observers is called inside perform_operation
 
@@ -100,11 +100,11 @@ def test_perform_operation_invalid_input():
     op = OperationFactory.create_operation("add")
     calc.set_operation(op)
     with pytest.raises(ValidationError, match="Invalid number format"):
-        calc.perform_operation("abc", 2)
+        calc.perform_operation(op, "abc", 2)
 
 def test_perform_operation_division_by_zero():
     calc = Calculator()
     op = OperationFactory.create_operation("divide")
     calc.set_operation(op)
     with pytest.raises(ValidationError, match="Division by zero"):
-        calc.perform_operation(5, 0)
+        calc.perform_operation(op, 5, 0)
