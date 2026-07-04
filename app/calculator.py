@@ -100,6 +100,28 @@ class Calculator:
         self.undo_stack.clear()
         self.redo_stack.clear()
 
+    def filter_history(self, operation=None, min_value=None, max_value=None):
+        """Return a filtered pandas DataFrame of the calculation history."""
+        if not self.config.history_file.exists():
+            return pd.DataFrame()
+
+        df = pd.read_csv(self.config.history_file, encoding=self.config.default_encoding)
+
+        # Filter by operation
+        if operation:
+            df = df[df["operation"] == operation]
+
+        # Filter by minimum result
+        if min_value is not None:
+            df = df[df["result"].astype(float) >= float(min_value)]
+
+        # Filter by maximum result
+        if max_value is not None:
+            df = df[df["result"].astype(float) <= float(max_value)]
+
+        return df
+
+
     def undo(self):
         if not self.undo_stack:
             return False
