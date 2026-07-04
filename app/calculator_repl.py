@@ -8,6 +8,14 @@ from app.exceptions import OperationError, ValidationError
 from app.history import AutoSaveObserver, LoggingObserver
 from app.operations import OperationFactory
 
+class Colors:
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+
 
 def calculator_repl():
     """
@@ -16,6 +24,7 @@ def calculator_repl():
     Implements a Read-Eval-Print Loop (REPL) that continuously prompts the user
     for commands, processes arithmetic operations, and manages calculation history.
     """
+    
     try:
         calc = Calculator()
         config = CalculatorConfig()
@@ -61,57 +70,58 @@ def calculator_repl():
                 if command == 'exit':
                     try:
                         calc.save_history()
-                        print("History saved successfully.")
+                        print(f"{Colors.OKGREEN}History saved successfully.{Colors.ENDC}")
                     except Exception as e:
-                        print(f"Warning: Could not save history: {e}")
-                    print("Goodbye!")
+                        print(f"{Colors.WARNING}Warning: Could not save history: {e}{Colors.ENDC}")
+                    print(f"{Colors.OKBLUE}Goodbye!{Colors.ENDC}")
                     break
 
                 if command == 'history':
                     history = calc.show_history()
                     if not history:
-                        print("History is empty.")
+                        print(f"{Colors.WARNING}History is empty.{Colors.ENDC}")
                     else:
-                        print("\nCalculation History:")
+                        print(f"{Colors.HEADER}\nCalculation History:{Colors.ENDC}")
                         for item in calc.history:
-                            print(f"{item.operation}({item.operand1}, {item.operand2}) = {item.result}")
+                            print(f"{Colors.OKBLUE}{item.operation}({item.operand1}, {item.operand2}) = {item.result}{Colors.ENDC}")
                     continue
 
                 if command == 'clear':
                     calc.clear_history()
-                    print("History cleared")
+                    print(f"{Colors.OKGREEN}History cleared.{Colors.ENDC}")
                     continue
 
                 if command == 'undo':
                     try:
                         calc.undo()
-                        print("Undid last calculation.")
+                        print(f"{Colors.OKGREEN}Undid last calculation.{Colors.ENDC}")
                     except Exception as e:
-                        print(f"Error undoing last calculation: {e}")
+                        print(f"{Colors.FAIL}Error undoing last calculation: {e}{Colors.ENDC}")
                     continue
+
 
                 if command == 'redo':
                     try:
                         calc.redo()
-                        print("Redid last undone calculation.")
+                        print(f"{Colors.OKGREEN}Redid last undone calculation.{Colors.ENDC}")
                     except Exception as e:
-                        print(f"Error redoing last undone calculation: {e}")
+                        print(f"{Colors.FAIL}Error redoing last undone calculation: {e}{Colors.ENDC}")
                     continue
 
                 if command == 'save':
                     try:
                         calc.save_history()
-                        print("History saved successfully")
+                        print(f"{Colors.OKGREEN}History saved successfully.{Colors.ENDC}")
                     except Exception as e:
-                        print(f"Error saving history: {e}")
+                        print(f"{Colors.FAIL}Error saving history: {e}{Colors.ENDC}")
                     continue
 
                 if command == 'load':
                     try:
                         calc.load_history()
-                        print("History loaded successfully")
+                        print(f"{Colors.OKGREEN}History loaded successfully.{Colors.ENDC}")
                     except Exception as e:
-                        print(f"Error loading history: {e}")
+                        print(f"{Colors.FAIL}Error loading history: {e}{Colors.ENDC}")
                     continue
 
                 if command == 'filter':
@@ -124,15 +134,15 @@ def calculator_repl():
                         min_value = Decimal(min_value) if min_value else None
                         max_value = Decimal(max_value) if max_value else None
                     except Exception as e:
-                        print(f"Invalid number format: {e}")
+                        print(f"{Colors.FAIL}Invalid number format: {e}{Colors.ENDC}")
                         continue
 
                     filtered_df = calc.filter_history(operation, min_value, max_value)
 
                     if filtered_df.empty:
-                        print("No matching history entries found.")
+                        print(f"{Colors.WARNING}No matching history entries found.{Colors.ENDC}")
                     else:
-                        print("\nFiltered History:")
+                        print(f"{Colors.OKGREEN}\nFiltered History:{Colors.ENDC}")
                         print(filtered_df)
                     continue
 
@@ -145,7 +155,7 @@ def calculator_repl():
                         min_value = Decimal(min_value) if min_value else None
                         max_value = Decimal(max_value) if max_value else None
                     except Exception as e:
-                        print(f"Invalid number format: {e}")
+                        print(f"{Colors.FAIL}Invalid number format: {e}{Colors.ENDC}")
                         continue
 
                     calc.export_filtered_history_to_csv(operation or None, min_value, max_value)
@@ -159,7 +169,7 @@ def calculator_repl():
                         min_value = Decimal(min_value) if min_value else None
                         max_value = Decimal(max_value) if max_value else None
                     except Exception as e:
-                        print(f"Invalid number format: {e}")
+                        print(f"{Colors.FAIL}Invalid number format: {e}{Colors.ENDC}")
                         continue
 
                     calc.export_filtered_history_to_excel(operation or None, min_value, max_value)
@@ -171,22 +181,22 @@ def calculator_repl():
                     stats = calc.analyze_history(operation)
 
                     if not stats:
-                        print("No matching history to analyze.")
+                        print(f"{Colors.WARNING}No matching history to analyze.{Colors.ENDC}")
                     else:
-                        print("Analytics Summary:")
+                        print(f"{Colors.OKGREEN}Analytics Summary:{Colors.ENDC}")
                         for key, value in stats.items():
                             print(f"  {key}: {value}")
                 
                 if command in ['add','subtract','multiply','divide','power','root','modulus','int_divide','percent', 'abs_diff']:
                     try:
-                        print("\nEnter numbers (or 'cancel' to abort):")
+                        print(f"{Colors.OKGREEN}\nEnter numbers (or 'cancel' to abort):{Colors.ENDC}")
                         a = input("First number: ")
                         if a.lower() == 'cancel':
-                            print("Operation cancelled")
+                            print(f"{Colors.WARNING}Operation cancelled.{Colors.ENDC}")
                             continue
                         b = input("Second number: ")
                         if b.lower() == 'cancel':
-                            print("Operation cancelled")
+                            print(f"{Colors.WARNING}Operation cancelled.{Colors.ENDC}")
                             continue
 
                         operation = OperationFactory.create_operation(command)
@@ -199,30 +209,30 @@ def calculator_repl():
                         print(f"\nResult: {result}")
                     except ValidationError as e:
                         logging.error(f"Validation error: {e}")
-                        print(f"Error: {e}")
+                        print(f"{Colors.FAIL}Error: {e}{Colors.ENDC}")
 
                     except OperationError as e:
                         logging.error(f"Operation error: {e}")
-                        print(f"Operation failed: {e}")
+                        print(f"{Colors.FAIL}Operation failed: {e}{Colors.ENDC}")
 
                     except Exception as e:
                         logging.error(f"Unexpected error: {e}")
-                        print(f"Invalid input. Use: command number1 number2")
+                        print(f"{Colors.FAIL}Invalid input. Use: command number1 number2{Colors.ENDC}")
                     continue
 
                 print(f"Unknown command: '{command}'. Type 'help' for available commands.")
 
             except KeyboardInterrupt:
-                print("\nOperation cancelled")
+                print(f"{Colors.WARNING}Operation cancelled.{Colors.ENDC}")
                 continue
             except EOFError:
-                print("\nInput terminated. Exiting...")
+                print(f"{Colors.WARNING}Input terminated. Exiting...{Colors.ENDC}")
                 break
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"{Colors.FAIL}Error: {e}{Colors.ENDC}")
                 continue
 
     except Exception as e:
-        print(f"Fatal error: {e}")
+        print(f"{Colors.FAIL}Fatal error: {e}{Colors.ENDC}")
         logging.error(f"Fatal error in calculator REPL: {e}")
         raise
