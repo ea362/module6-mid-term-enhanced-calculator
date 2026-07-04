@@ -7,3 +7,5 @@ from app.calculator import Calculator
 from app.calculation import Calculation
 from app.operations import OperationFactory
 from app.calculator_config import CalculatorConfig
+
+__version__ = "1.0.0"
