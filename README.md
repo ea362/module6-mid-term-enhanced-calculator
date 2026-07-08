@@ -41,7 +41,7 @@ cd module6‑mid‑term‑enhanced‑calculator
 
 **2. Create and activate a virtual environment**
 ```
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate      # macOS/Linux
 venv\Scripts\activate         # Windows
 ```
