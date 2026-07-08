@@ -78,6 +78,11 @@ def test_int_divide():
     op = OperationFactory.create_operation("int_divide")
     assert op.execute(Decimal("10"), Decimal("3")) == Decimal("3")
 
+def test_int_divide_zero():
+    op = OperationFactory.create_operation("int_divide")
+    with pytest.raises(ValidationError, match="Integer division by zero"):
+        op.execute(Decimal("10"), Decimal("0"))
+
 def test_percent():
     op = OperationFactory.create_operation("percent")
     assert op.execute(Decimal("50"), Decimal("200")) == Decimal("25")
