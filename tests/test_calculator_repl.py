@@ -200,3 +200,47 @@ def test_repl_fatal_error(monkeypatch, capsys):
         calculator_repl()
     captured = capsys.readouterr()
     assert "Fatal error" in captured.out
+
+def test_repl_filter(monkeypatch, capsys):
+    inputs = ["add", "2", "3", "save", "filter", "", "", "", "exit"]
+    monkeypatch.setattr("builtins.input", make_inputs(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Filtered History" in captured.out
+
+def test_repl_export_csv(monkeypatch, capsys):
+    inputs = ["add", "2", "3", "save", "export_csv", "", "", "", "exit"]
+    monkeypatch.setattr("builtins.input", make_inputs(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Filtered history exported to" in captured.out
+
+def test_repl_export_excel(monkeypatch, capsys):
+    inputs = ["add", "2", "3", "save", "export_excel", "", "", "", "exit"]
+    monkeypatch.setattr("builtins.input", make_inputs(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Filtered history exported to" in captured.out
+
+def test_repl_analytics(monkeypatch, capsys):
+    inputs = ["add", "2", "3", "save", "analytics", "", "exit"]
+    monkeypatch.setattr("builtins.input", make_inputs(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Analytics Summary" in captured.out
+
+def test_repl_unexpected_operation_error(monkeypatch, capsys):
+    """Cover the generic 'except Exception' inside arithmetic block."""
+    import app.calculator_repl
+    original_calculator = app.calculator_repl.Calculator
+
+    class MockCalculator(original_calculator):
+        def perform_operation(self, a, b):
+            raise TypeError("Mock unexpected error")
+
+    monkeypatch.setattr(app.calculator_repl, "Calculator", MockCalculator)
+    inputs = ["add", "2", "3", "exit"]
+    monkeypatch.setattr("builtins.input", make_inputs(inputs))
+    calculator_repl()
+    captured = capsys.readouterr()
+    assert "Unexpected error" in captured.out
