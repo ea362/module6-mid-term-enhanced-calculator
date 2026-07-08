@@ -1,6 +1,6 @@
 class HelpProvider:
     def get_help(self):
-        raise NotImplementedError
+        raise NotImplementedError # pragma: no cover
 
 
 class BaseHelpProvider(HelpProvider):
