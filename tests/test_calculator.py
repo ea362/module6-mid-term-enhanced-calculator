@@ -105,3 +105,72 @@ def test_perform_operation_division_by_zero():
     calc.set_operation(op)
     with pytest.raises(ValidationError, match="Division by zero"):
         calc.perform_operation(5, 0)
+
+def test_save_history_empty():
+    """Cover early return when history is empty."""
+    calc = Calculator()
+    calc.save_history()  # no error, does nothing
+
+def test_load_history_missing_file():
+    """Cover early return when history file does not exist."""
+    calc = Calculator()
+    # Ensure file does not exist
+    if calc.config.history_file.exists():
+        calc.config.history_file.unlink()
+    calc.load_history()  # should do nothing
+
+def test_filter_history_missing_file():
+    """Cover early return when history file missing."""
+    calc = Calculator()
+    df = calc.filter_history()
+    assert df.empty
+
+def test_analyze_history_missing_file():
+    """Cover early return when history file missing."""
+    calc = Calculator()
+    stats = calc.analyze_history()
+    assert stats == {}
+
+def test_export_filtered_empty_csv(tmp_path, monkeypatch):
+    """Cover 'No matching entries' branch in export_csv."""
+    monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
+    config = CalculatorConfig()
+    calc = Calculator(config)
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))  # result 5
+    calc.save_history()
+    # Filter with min > max so DataFrame becomes empty
+    calc.export_filtered_history_to_csv(
+        operation="add", min_value=Decimal("10"), max_value=Decimal("1")
+    )
+    # No file should be created; we can check it doesn't exist
+    csv_path = config.history_dir / "filtered_history.csv"
+    assert not csv_path.exists()
+
+def test_export_filtered_empty_excel(tmp_path, monkeypatch):
+    """Cover 'No matching entries' branch in export_excel."""
+    monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
+    config = CalculatorConfig()
+    calc = Calculator(config)
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))
+    calc.save_history()
+    calc.export_filtered_history_to_excel(
+        operation="add", min_value=Decimal("10"), max_value=Decimal("1")
+    )
+    xlsx_path = config.history_dir / "filtered_history.xlsx"
+    assert not xlsx_path.exists()
+
+def test_analyze_history_empty_after_filter(tmp_path, monkeypatch):
+    """Cover empty DataFrame after filtering."""
+    monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
+    config = CalculatorConfig()
+    calc = Calculator(config)
+    op_add = OperationFactory.create_operation("add")
+    calc.set_operation(op_add)
+    calc.perform_operation(Decimal("2"), Decimal("3"))
+    calc.save_history()
+    stats = calc.analyze_history("multiply")  # no such operation
+    assert stats == {}
