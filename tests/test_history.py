@@ -12,6 +12,8 @@ def test_logging_observer(tmp_path, monkeypatch):
     monkeypatch.setenv("CALCULATOR_BASE_DIR", str(tmp_path))
 
     config = CalculatorConfig()
+    # Clear any existing logging handlers to ensure fresh configuration
+    logging.root.handlers.clear()
     logging.basicConfig(
         filename=str(config.log_file),
         level=logging.INFO,
@@ -26,10 +28,11 @@ def test_logging_observer(tmp_path, monkeypatch):
     calc.set_operation(op)
     calc.perform_operation(Decimal("2"), Decimal("3"))
 
-    # Log file should be created
+    # The log file should be created after a log message is emitted
     assert config.log_file.exists()
     content = config.log_file.read_text()
-    assert "add" in content
+    # The operation name in the log is the class name, e.g., "Addition"
+    assert "Addition" in content
 
 
 def test_autosave_observer_triggers_save(monkeypatch):
